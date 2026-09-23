@@ -4,468 +4,194 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Sengketa Informasi — Komisi Informasi Pusat</title>
-<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<link rel="stylesheet" href="./assets/app.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<style>
-  :root {
-    --primary: #1E40AF;
-    --primary-light: #DBEAFE;
-    --accent: #2563EB;
-    --bg: #F1F5F9;
-    --text: #1E293B;
-    --muted: #64748B;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 24px;
-  }
-  h2 { margin-bottom: 4px; }
-  .subtitle { color: var(--muted); font-size: 14px; margin-top: 0; }
-  .card {
-    background: white;
-    border-radius: 12px;
-    padding: 18px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    margin-bottom: 18px;
-  }
-  .filter-bar {
-    display: flex;
-    gap: 24px;
-    flex-wrap: wrap;
-    align-items: flex-end;
-  }
-  .filter-bar label {
-    display: block;
-    font-weight: 600;
-    font-size: 13px;
-    margin-bottom: 6px;
-  }
-  .filter-bar select,
-  .filter-bar input[type="search"] {
-    width: 240px;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #CBD5E1;
-    font-size: 13px;
-    font-family: inherit;
-  }
-  .filter-bar input[type="search"]:focus,
-  .filter-bar select:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--primary-light);
-  }
-  .filter-search { flex: 1 1 320px; min-width: 260px; }
-  .filter-search input[type="search"] { width: 100%; }
-  .filter-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
-  .btn-reset {
-    padding: 9px 14px;
-    border-radius: 6px;
-    border: 1px solid #CBD5E1;
-    background: white;
-    color: var(--text);
-    font-size: 13px;
-    font-family: inherit;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .btn-reset:hover { background: var(--primary-light); border-color: var(--accent); color: var(--primary); }
-  .result-count { font-size: 12px; color: var(--muted); font-weight: normal; margin-left: 6px; }
-  mark { background: #FEF08A; color: inherit; padding: 0 1px; border-radius: 2px; }
-  .kpi-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 8px;
-  }
-  .kpi {
-    background: white;
-    border-radius: 12px;
-    padding: 18px;
-    text-align: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    border-top: 4px solid var(--accent);
-  }
-  .kpi .value { font-size: 30px; font-weight: bold; color: var(--primary); }
-  .kpi .title { font-size: 13px; color: var(--muted); margin-top: 4px; font-weight: 600; }
-  .kpi .subtitle2 { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; }
-  .grid-2b { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
-  h5 { margin-top: 0; color: var(--text); }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th, td { padding: 8px; text-align: left; border-bottom: 1px solid #E2E8F0; }
-  th { background: var(--primary); color: white; position: sticky; top: 0; }
-  tr:nth-child(even) { background: var(--bg); }
-  .table-wrap { max-height: 420px; overflow: auto; border-radius: 8px; }
-  .footer-note { color: var(--muted); font-size: 11px; margin-top: 18px; text-align: center; }
-  @media (max-width: 900px) {
-    .kpi-row { grid-template-columns: repeat(2, 1fr); }
-    .grid-2, .grid-2b { grid-template-columns: 1fr; }
-  }
-</style>
 </head>
 <body>
 
-  <div>
-    <h2>Dashboard Sengketa Informasi Publik</h2>
-    <p class="subtitle">Sekretariat Komisi Informasi Pusat — rekap permohonan penyelesaian sengketa informasi (PSI)</p>
+<header class="page-head">
+  <h1>Dashboard Sengketa Informasi Publik</h1>
+  <p class="page-sub">Sekretariat Komisi Informasi Pusat — rekap permohonan penyelesaian sengketa informasi (PSI) dan buku besar persidangan</p>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Bagian dashboard">
+  <button class="tab" role="tab" id="tab-btn-permohonan" aria-controls="tab-permohonan" aria-selected="true" data-tab="permohonan">Permohonan</button>
+  <button class="tab" role="tab" id="tab-btn-sidang" aria-controls="tab-sidang" aria-selected="false" data-tab="sidang">Buku Besar Sidang</button>
+</nav>
+
+<div id="app-status" class="app-status" role="status">Memuat data…</div>
+
+<!-- ======================= TAB 1: PERMOHONAN ======================= -->
+<section class="tab-panel" id="tab-permohonan" role="tabpanel" aria-labelledby="tab-btn-permohonan" hidden>
+
+  <div class="section-head">
+    <h2>Permohonan Penyelesaian Sengketa Informasi</h2>
+    <p class="section-sub">Rekap permohonan PSI yang masuk ke Sekretariat Komisi Informasi Pusat.</p>
   </div>
 
   <div class="card filter-bar">
     <div class="filter-search">
-      <label for="f-cari">Cari</label>
-      <input type="search" id="f-cari" placeholder="Pemohon, badan publik, no. registrasi, informasi yang diminta…" autocomplete="off">
-      <div class="filter-hint">Beberapa kata dipisah spasi dicari sekaligus (semua kata harus cocok).</div>
+      <label for="p-cari">Cari</label>
+      <input type="search" id="p-cari" placeholder="Pemohon, badan publik, no. registrasi, informasi yang diminta…" autocomplete="off">
+      <p class="filter-hint">Beberapa kata dipisah spasi dicari sekaligus — semua kata harus cocok.</p>
     </div>
     <div>
-      <label for="f-tahun">Tahun</label>
-      <select id="f-tahun"><option value="ALL">Semua tahun</option></select>
+      <label for="p-tahun">Tahun</label>
+      <select id="p-tahun"><option value="ALL">Semua tahun</option></select>
     </div>
     <div>
-      <label for="f-jenis">Jenis Pemohon</label>
-      <select id="f-jenis"><option value="ALL">Semua</option></select>
+      <label for="p-jenis">Jenis Pemohon</label>
+      <select id="p-jenis"><option value="ALL">Semua</option></select>
     </div>
     <div>
-      <label for="f-klasifikasi">Klasifikasi Informasi</label>
-      <select id="f-klasifikasi"><option value="ALL">Semua</option></select>
+      <label for="p-klasifikasi">Klasifikasi Informasi</label>
+      <select id="p-klasifikasi"><option value="ALL">Semua</option></select>
     </div>
     <div>
-      <button type="button" id="f-reset" class="btn-reset">Reset filter</button>
+      <button type="button" class="btn-reset" id="p-reset">Reset filter</button>
     </div>
   </div>
 
-  <div class="kpi-row" id="kpi-row"></div>
+  <div class="kpi-row" id="p-kpi"></div>
 
   <div class="grid-2">
-    <div class="card">
-      <h5>Tren Jumlah Permohonan PSI per Tahun</h5>
-      <div id="chart-tren"></div>
-    </div>
-    <div class="card">
-      <h5>Jenis Pemohon</h5>
-      <div id="chart-jenis"></div>
-    </div>
+    <figure class="card chart-card">
+      <figcaption>
+        <h3>Tren Jumlah Permohonan per Tahun</h3>
+        <p class="chart-sub">Jumlah permohonan PSI. Mengikuti filter selain Tahun, supaya bentuk trennya tetap terbaca.</p>
+      </figcaption>
+      <div class="plot" id="p-chart-tren"></div>
+    </figure>
+    <figure class="card chart-card">
+      <figcaption>
+        <h3>Jenis Pemohon</h3>
+        <p class="chart-sub">Komposisi permohonan menurut jenis pemohon.</p>
+      </figcaption>
+      <div class="plot" id="p-chart-jenis"></div>
+    </figure>
   </div>
 
-  <div class="grid-2b">
-    <div class="card">
-      <h5>10 Badan Publik Paling Sering Disengketakan</h5>
-      <div id="chart-badan-publik"></div>
-    </div>
-    <div class="card">
-      <h5>Distribusi Klasifikasi Informasi</h5>
-      <div id="chart-klasifikasi"></div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:18px;">
-    <h5>Metode Pendaftaran Permohonan</h5>
-    <div id="chart-metode"></div>
+  <div class="grid-2">
+    <figure class="card chart-card">
+      <figcaption>
+        <h3>10 Badan Publik Paling Sering Disengketakan</h3>
+        <p class="chart-sub">Nama panjang dipendekkan dengan elipsis; nama lengkap muncul saat kursor diarahkan ke batang.</p>
+      </figcaption>
+      <div class="plot" id="p-chart-badan"></div>
+    </figure>
+    <figure class="card chart-card">
+      <figcaption>
+        <h3>Distribusi Klasifikasi Informasi</h3>
+        <p class="chart-sub">Klasifikasi informasi yang dimohonkan.</p>
+      </figcaption>
+      <div class="plot" id="p-chart-klasifikasi"></div>
+    </figure>
   </div>
 
   <div class="card">
-    <h5>Daftar Permohonan (sesuai filter)<span class="result-count" id="result-count"></span></h5>
+    <div class="table-head">
+      <h3>Daftar Permohonan</h3>
+      <p class="table-count" id="p-count"></p>
+    </div>
     <div class="table-wrap">
-      <table id="tabel-data">
-        <thead>
-          <tr>
-            <th>NO</th><th>TAHUN</th><th>NO REG PENDAFTARAN</th><th>PEMOHON</th>
-            <th>JENIS PEMOHON</th><th>BADAN PUBLIK</th><th>KLASIFIKASI</th>
-            <th>METODE PENDAFTARAN</th><th>PENERIMA</th>
-          </tr>
-        </thead>
+      <table class="data-table" id="p-table">
+        <thead><tr></tr></thead>
         <tbody></tbody>
       </table>
     </div>
+    <div class="table-more"><button type="button" class="btn-more" id="p-more" hidden></button></div>
+  </div>
+</section>
+
+<!-- ======================= TAB 2: BUKU BESAR SIDANG ======================= -->
+<section class="tab-panel" id="tab-sidang" role="tabpanel" aria-labelledby="tab-btn-sidang" hidden>
+
+  <div class="section-head">
+    <h2>Buku Besar Sidang</h2>
+    <p class="section-sub">Proses persidangan tiap kasus sengketa informasi, termasuk agenda sidang per tanggal.</p>
   </div>
 
-  <p class="footer-note">Sumber: rekap internal Sekretariat Komisi Informasi Pusat (PSI), diolah untuk keperluan diseminasi data.</p>
+  <div class="card filter-bar">
+    <div class="filter-search">
+      <label for="s-cari">Cari</label>
+      <input type="search" id="s-cari" placeholder="Pemohon, termohon, no. register…" autocomplete="off">
+      <p class="filter-hint">Beberapa kata dipisah spasi dicari sekaligus — semua kata harus cocok.</p>
+    </div>
+    <div>
+      <label for="s-tahun">Tahun</label>
+      <select id="s-tahun"><option value="ALL">Semua tahun</option></select>
+    </div>
+    <div>
+      <label for="s-jalur">Hasil / Jalur</label>
+      <select id="s-jalur"><option value="ALL">Semua</option></select>
+    </div>
+    <div>
+      <label for="s-amar">Amar Putusan</label>
+      <select id="s-amar"><option value="ALL">Semua</option></select>
+    </div>
+    <div>
+      <button type="button" class="btn-reset" id="s-reset">Reset filter</button>
+    </div>
+  </div>
 
-<script>
-const PALETTE_ACCENT = '#2563EB';
-const PALETTE_PRIMARY = '#1E40AF';
-const PLOTLY_LAYOUT_BASE = {
-  template: 'plotly_white',
-  margin: { l: 40, r: 20, t: 20, b: 40 },
-  font: { family: 'Arial' },
-};
+  <div class="kpi-row kpi-row-6" id="s-kpi"></div>
 
-let RAW_ROWS = [];
+  <div class="grid-2">
+    <figure class="card chart-card">
+      <figcaption>
+        <h3>Tren Jumlah Kasus per Tahun</h3>
+        <p class="chart-sub">Jumlah kasus yang disidangkan. Mengikuti filter selain Tahun.</p>
+      </figcaption>
+      <div class="plot" id="s-chart-tren"></div>
+    </figure>
+    <figure class="card chart-card">
+      <figcaption>
+        <h3>Hasil / Jalur Penyelesaian</h3>
+        <p class="chart-sub">Kasus yang jalurnya belum terbaca dari data mentah tetap ditampilkan sebagai "Belum diklasifikasi".</p>
+      </figcaption>
+      <div class="plot" id="s-chart-jalur"></div>
+    </figure>
+  </div>
 
-function fillOrDash(v) {
-  return (v === undefined || v === null || String(v).trim() === '') ? 'Tidak diketahui' : v;
-}
+  <div class="grid-2">
+    <figure class="card chart-card">
+      <figcaption>
+        <h3>Distribusi Amar Putusan</h3>
+        <p class="chart-sub">Warna batang mengikuti jalur penyelesaiannya.</p>
+      </figcaption>
+      <div class="plot" id="s-chart-amar"></div>
+    </figure>
+    <figure class="card chart-card">
+      <figcaption>
+        <h3>10 Termohon Paling Sering Disengketakan</h3>
+        <p class="chart-sub">Nama panjang dipendekkan dengan elipsis; nama lengkap muncul saat kursor diarahkan ke batang.</p>
+      </figcaption>
+      <div class="plot" id="s-chart-termohon"></div>
+    </figure>
+  </div>
 
-function ringkasKlasifikasi(v) {
-  const s = fillOrDash(v);
-  if (s === 'Tidak diketahui') return s;
-  return String(s).replace(/^\s*\d+\.\s*/, '').trim() || 'Tidak diketahui';
-}
+  <div class="card">
+    <div class="table-head">
+      <h3>Daftar Kasus</h3>
+      <p class="table-count" id="s-count"></p>
+    </div>
+    <p class="table-hint">Klik baris kasus untuk membuka detail dan linimasa agenda sidangnya.</p>
+    <div class="table-wrap">
+      <table class="data-table data-table-expandable" id="s-table">
+        <thead><tr></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="table-more"><button type="button" class="btn-more" id="s-more" hidden></button></div>
+  </div>
+</section>
 
-// kolom yang ikut dicari lewat kotak "Cari"
-const SEARCH_FIELDS = [
-  'TAHUN', 'NO_REG_PENDAFTARAN', 'NO_REGISTER_SENGKETA', 'PEMOHON', 'JENIS_PEMOHON',
-  'ALAMAT_PEMOHON', 'BADAN_PUBLIK', 'BADAN_PUBLIK_RAW', 'UNIT_KERJA_RAW',
-  'KATEGORI_BADAN_PUBLIK', 'METODE_PENDAFTARAN', 'PENERIMA',
-  'INFORMASI_YANG_DIMINTA', 'KLASIFIKASI',
-];
+<p class="footer-note">Sumber: rekap internal Sekretariat Komisi Informasi Pusat, diolah untuk keperluan diseminasi data.</p>
 
-function buildSearchBlob(r) {
-  return SEARCH_FIELDS
-    .map(k => (r[k] === undefined || r[k] === null) ? '' : String(r[k]))
-    .join(' \u0001 ')
-    .toLowerCase();
-}
-
-// kata kunci dipisah spasi; semua kata harus cocok (AND)
-function searchTerms() {
-  return document.getElementById('f-cari').value
-    .toLowerCase()
-    .split(/\s+/)
-    .filter(t => t.length > 0);
-}
-
-function matchesSearch(r, terms) {
-  for (let i = 0; i < terms.length; i++) {
-    if (r.SEARCH_BLOB.indexOf(terms[i]) === -1) return false;
-  }
-  return true;
-}
-
-function escapeHtml(v) {
-  return String(v === undefined || v === null ? '' : v)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-function escapeRegExp(t) {
-  return t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-// tandai potongan teks yang cocok dengan kata kunci pencarian
-function highlight(v, terms) {
-  const raw = (v === undefined || v === null) ? '' : String(v);
-  if (terms.length === 0) return escapeHtml(raw);
-  // split dengan satu capture group: indeks ganjil = potongan yang cocok
-  const re = new RegExp('(' + terms.map(escapeRegExp).join('|') + ')', 'gi');
-  return raw.split(re)
-    .map((part, i) => (i % 2 === 1) ? '<mark>' + escapeHtml(part) + '</mark>' : escapeHtml(part))
-    .join('');
-}
-
-function populateSelect(id, values) {
-  const sel = document.getElementById(id);
-  values.forEach(v => {
-    const opt = document.createElement('option');
-    opt.value = v;
-    opt.textContent = v;
-    sel.appendChild(opt);
-  });
-}
-
-function applyFilters() {
-  const tahun = document.getElementById('f-tahun').value;
-  const jenis = document.getElementById('f-jenis').value;
-  const klas = document.getElementById('f-klasifikasi').value;
-  const terms = searchTerms();
-  return RAW_ROWS.filter(r => {
-    if (tahun !== 'ALL' && String(r.TAHUN) !== String(tahun)) return false;
-    if (jenis !== 'ALL' && r.JENIS_PEMOHON_F !== jenis) return false;
-    if (klas !== 'ALL' && r.KLASIFIKASI_RINGKAS !== klas) return false;
-    if (!matchesSearch(r, terms)) return false;
-    return true;
-  });
-}
-
-function countBy(rows, key) {
-  const m = {};
-  rows.forEach(r => { const k = r[key]; m[k] = (m[k] || 0) + 1; });
-  return m;
-}
-
-function renderKPI(rows) {
-  const total = rows.length;
-  const nBadanPublik = new Set(rows.map(r => r.BADAN_PUBLIK_F)).size;
-  const nPemohon = new Set(rows.map(r => r.PEMOHON)).size;
-  const nTahun = new Set(rows.map(r => r.TAHUN)).size;
-  const items = [
-    ['Total Permohonan', total, 'sesuai filter aktif'],
-    ['Badan Publik Terlibat', nBadanPublik, 'badan publik unik'],
-    ['Pemohon Unik', nPemohon, 'pemohon berbeda'],
-    ['Cakupan Tahun', nTahun, 'tahun tercakup'],
-  ];
-  const el = document.getElementById('kpi-row');
-  el.innerHTML = items.map(([title, value, sub]) => `
-    <div class="kpi">
-      <div class="value">${value}</div>
-      <div class="title">${title}</div>
-      <div class="subtitle2">${sub}</div>
-    </div>`).join('');
-}
-
-function emptyFig(msg) {
-  return {
-    data: [],
-    layout: {
-      ...PLOTLY_LAYOUT_BASE,
-      height: 320,
-      xaxis: { visible: false },
-      yaxis: { visible: false },
-      annotations: [{ text: msg || 'Tidak ada data untuk filter ini', showarrow: false, font: { size: 14, color: '#64748B' } }],
-    },
-  };
-}
-
-function renderTren(rowsAll) {
-  // tren tidak terpengaruh filter tahun (biar tren tetap terlihat), tapi ikut filter lain + pencarian
-  const jenis = document.getElementById('f-jenis').value;
-  const klas = document.getElementById('f-klasifikasi').value;
-  const terms = searchTerms();
-  const rows = RAW_ROWS.filter(r => {
-    if (jenis !== 'ALL' && r.JENIS_PEMOHON_F !== jenis) return false;
-    if (klas !== 'ALL' && r.KLASIFIKASI_RINGKAS !== klas) return false;
-    if (!matchesSearch(r, terms)) return false;
-    return true;
-  });
-  if (rows.length === 0) { Plotly.newPlot('chart-tren', emptyFig().data, emptyFig().layout, {displayModeBar:false}); return; }
-  const counts = countBy(rows, 'TAHUN');
-  const years = Object.keys(counts).sort();
-  const vals = years.map(y => counts[y]);
-  Plotly.newPlot('chart-tren', [{
-    x: years, y: vals, type: 'bar', text: vals, textposition: 'outside', marker: { color: PALETTE_ACCENT }
-  }], { ...PLOTLY_LAYOUT_BASE, height: 320, xaxis: { title: 'Tahun', dtick: 1 }, yaxis: { title: 'Jumlah Permohonan' } }, {displayModeBar:false});
-}
-
-function renderJenis(rows) {
-  if (rows.length === 0) { const f = emptyFig(); Plotly.newPlot('chart-jenis', f.data, f.layout, {displayModeBar:false}); return; }
-  const counts = countBy(rows, 'JENIS_PEMOHON_F');
-  const labels = Object.keys(counts);
-  const vals = labels.map(l => counts[l]);
-  Plotly.newPlot('chart-jenis', [{
-    labels, values: vals, type: 'pie', hole: 0.45,
-    marker: { colors: ['#1E40AF', '#3B82F6', '#93C5FD', '#BFDBFE'] }
-  }], { ...PLOTLY_LAYOUT_BASE, height: 320, margin: { l: 10, r: 10, t: 10, b: 10 } }, {displayModeBar:false});
-}
-
-function renderBadanPublik(rows) {
-  if (rows.length === 0) { const f = emptyFig(); Plotly.newPlot('chart-badan-publik', f.data, f.layout, {displayModeBar:false}); return; }
-  const counts = countBy(rows, 'BADAN_PUBLIK_F');
-  let entries = Object.entries(counts).sort((a, b) => a[1] - b[1]).slice(-10);
-  Plotly.newPlot('chart-badan-publik', [{
-    x: entries.map(e => e[1]), y: entries.map(e => e[0]), type: 'bar', orientation: 'h',
-    text: entries.map(e => e[1]), textposition: 'outside', marker: { color: PALETTE_PRIMARY }
-  }], { ...PLOTLY_LAYOUT_BASE, height: 340, margin: { l: 10, r: 30, t: 10, b: 30 } }, {displayModeBar:false});
-}
-
-function renderKlasifikasi(rows) {
-  if (rows.length === 0) { const f = emptyFig(); Plotly.newPlot('chart-klasifikasi', f.data, f.layout, {displayModeBar:false}); return; }
-  const counts = countBy(rows, 'KLASIFIKASI_RINGKAS');
-  const labels = Object.keys(counts);
-  const vals = labels.map(l => counts[l]);
-  Plotly.newPlot('chart-klasifikasi', [{
-    x: labels, y: vals, type: 'bar', text: vals, textposition: 'outside', marker: { color: PALETTE_ACCENT }
-  }], { ...PLOTLY_LAYOUT_BASE, height: 340, margin: { l: 30, r: 10, t: 10, b: 90 }, xaxis: { tickangle: -35 } }, {displayModeBar:false});
-}
-
-function renderMetode(rows) {
-  if (rows.length === 0) { const f = emptyFig(); Plotly.newPlot('chart-metode', f.data, f.layout, {displayModeBar:false}); return; }
-  const counts = countBy(rows, 'METODE_PENDAFTARAN_F');
-  const labels = Object.keys(counts);
-  const vals = labels.map(l => counts[l]);
-  Plotly.newPlot('chart-metode', [{
-    x: labels, y: vals, type: 'bar', text: vals, textposition: 'outside', marker: { color: PALETTE_PRIMARY }
-  }], { ...PLOTLY_LAYOUT_BASE, height: 300, margin: { l: 30, r: 10, t: 10, b: 40 } }, {displayModeBar:false});
-}
-
-function renderTable(rows) {
-  const tbody = document.querySelector('#tabel-data tbody');
-  const terms = searchTerms();
-  const h = v => highlight(v, terms);
-  if (rows.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#64748B;padding:18px;">Tidak ada permohonan yang cocok dengan filter/kata kunci ini.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = rows.map(r => `
-    <tr>
-      <td>${escapeHtml(r.NO)}</td><td>${escapeHtml(r.TAHUN)}</td><td>${h(r.NO_REG_PENDAFTARAN)}</td>
-      <td>${h(r.PEMOHON)}</td><td>${h(r.JENIS_PEMOHON_F)}</td><td>${h(r.BADAN_PUBLIK_F)}</td>
-      <td>${h(r.KLASIFIKASI_RINGKAS)}</td><td>${h(r.METODE_PENDAFTARAN_F)}</td><td>${h(r.PENERIMA)}</td>
-    </tr>`).join('');
-}
-
-function renderResultCount(rows) {
-  const el = document.getElementById('result-count');
-  const total = RAW_ROWS.length;
-  el.textContent = `— menampilkan ${rows.length.toLocaleString('id-ID')} dari ${total.toLocaleString('id-ID')} permohonan`;
-}
-
-function renderAll() {
-  const rows = applyFilters();
-  renderKPI(rows);
-  renderTren(rows);
-  renderJenis(rows);
-  renderBadanPublik(rows);
-  renderKlasifikasi(rows);
-  renderMetode(rows);
-  renderTable(rows);
-  renderResultCount(rows);
-}
-
-function init(data) {
-  RAW_ROWS = data.map(r => ({
-    ...r,
-    TAHUN: parseInt(r.TAHUN, 10),
-    JENIS_PEMOHON_F: fillOrDash(r.JENIS_PEMOHON),
-    BADAN_PUBLIK_F: fillOrDash(r.BADAN_PUBLIK),
-    METODE_PENDAFTARAN_F: fillOrDash(r.METODE_PENDAFTARAN),
-    KLASIFIKASI_RINGKAS: ringkasKlasifikasi(r.KLASIFIKASI),
-    SEARCH_BLOB: buildSearchBlob(r),
-  }));
-
-  const tahunOptions = [...new Set(RAW_ROWS.map(r => r.TAHUN))].sort((a, b) => a - b);
-  const jenisOptions = [...new Set(RAW_ROWS.map(r => r.JENIS_PEMOHON_F))].sort();
-  const klasOptions = [...new Set(RAW_ROWS.map(r => r.KLASIFIKASI_RINGKAS))].sort();
-
-  populateSelect('f-tahun', tahunOptions);
-  populateSelect('f-jenis', jenisOptions);
-  populateSelect('f-klasifikasi', klasOptions);
-
-  ['f-tahun', 'f-jenis', 'f-klasifikasi'].forEach(id => {
-    document.getElementById(id).addEventListener('change', renderAll);
-  });
-
-  // pencarian di-debounce supaya tidak render ulang tiap ketukan tombol
-  let searchTimer = null;
-  document.getElementById('f-cari').addEventListener('input', () => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(renderAll, 200);
-  });
-
-  document.getElementById('f-reset').addEventListener('click', () => {
-    document.getElementById('f-cari').value = '';
-    ['f-tahun', 'f-jenis', 'f-klasifikasi'].forEach(id => {
-      document.getElementById(id).value = 'ALL';
-    });
-    clearTimeout(searchTimer);
-    renderAll();
-  });
-
-  renderAll();
-}
-
-Papa.parse('./data/sengketa_informasi.csv', {
-  download: true,
-  header: true,
-  skipEmptyLines: true,
-  complete: (results) => init(results.data),
-  error: (err) => {
-    document.body.innerHTML = '<p style="color:red;padding:24px;">Gagal memuat data: ' + err + '</p>';
-  }
-});
-</script>
+<script src="./assets/core.js"></script>
+<script src="./assets/tab-permohonan.js"></script>
+<script src="./assets/tab-sidang.js"></script>
+<script>KIP.boot();</script>
 </body>
 </html>

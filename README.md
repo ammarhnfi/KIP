@@ -9,45 +9,88 @@ pinned: false
 
 # Dashboard Sengketa Informasi Publik
 
-Dashboard statis (HTML + JavaScript + Plotly.js) untuk melihat tren dan distribusi
-permohonan penyelesaian sengketa informasi (PSI) yang tercatat di Sekretariat
-Komisi Informasi Pusat. Tidak butuh server Python — semua render & filter jalan
-langsung di browser, jadi cocok untuk SDK **static** di Hugging Face Spaces.
+Dashboard statis (HTML + JavaScript + Plotly.js) untuk data sengketa informasi di
+Sekretariat Komisi Informasi Pusat. Tidak ada backend dan tidak ada build step —
+semua parsing CSV, filter, agregasi, dan render jalan di browser, jadi cocok untuk
+Hugging Face Spaces dengan SDK **static**.
 
-## Filter & pencarian
+Aplikasinya punya dua tab:
 
-- **Cari** — kotak teks bebas di kiri filter bar. Mencari ke kolom nomor registrasi,
-  pemohon, jenis pemohon, alamat pemohon, badan publik (termasuk nama mentah &
-  unit kerja), kategori badan publik, metode pendaftaran, penerima, informasi yang
-  diminta, klasifikasi, dan tahun. Beberapa kata dipisah spasi dicari sekaligus —
-  semua kata harus cocok (AND), tidak peduli besar-kecil huruf. Teks yang cocok
-  ditandai di tabel.
-- **Tahun / Jenis Pemohon / Klasifikasi Informasi** — dropdown seperti sebelumnya.
-- **Reset filter** — mengosongkan kotak pencarian dan mengembalikan semua dropdown
-  ke "Semua".
+| Tab | Isi |
+| --- | --- |
+| **Permohonan** | Permohonan penyelesaian sengketa informasi (PSI) yang masuk |
+| **Buku Besar Sidang** | Proses persidangan tiap kasus + linimasa agenda sidangnya |
 
-Semua filter berlaku ke KPI, grafik, dan tabel sekaligus. Grafik tren per tahun
-sengaja tetap menampilkan seluruh tahun (hanya mengikuti pencarian, jenis pemohon,
-dan klasifikasi) supaya bentuk trennya tetap terbaca.
+## Struktur file
 
-## Isi
+```
+index.html              kerangka halaman (dua tab)
+assets/app.css          gaya
+assets/core.js          util bersama: baca CSV, pencarian, tabel, util grafik, tab
+assets/tab-permohonan.js  tab 1
+assets/tab-sidang.js      tab 2
+data/sengketa_informasi.csv   data permohonan
+data/sidang_kasus.csv         data kasus (satu baris per kasus)
+data/sidang_agenda.csv        data agenda sidang (satu baris per tanggal sidang)
+```
 
-- `index.html` — dashboard-nya (baca data lewat `fetch`, jadi tidak perlu di-build ulang tiap ganti data)
-- `data/sengketa_informasi.csv` — data sumber. Kolom **NO, TAHUN** diikuti field lain.
+Tidak ada data yang di-hardcode di JavaScript. Yang ada di kode hanya **kosakata
+baku** (daftar opsi Jenis Pemohon, Hasil/Jalur, dan Amar Putusan) plus pemetaan
+warnanya.
+
+## Fitur tiap tab
+
+Keduanya punya pola yang sama: kartu filter (pencarian bebas + dropdown + tombol
+**Reset filter**) → baris kartu KPI → grafik → tabel data yang bisa disortir.
+Semua filter berlaku ke KPI, grafik, dan tabel sekaligus.
+
+**Pencarian bebas.** Beberapa kata dipisah spasi dicocokkan sekaligus (semua kata
+harus cocok, tidak peduli besar-kecil huruf). Potongan yang cocok ditandai di
+tabel. Tab Permohonan mencari di nomor registrasi, pemohon, badan publik, dan
+informasi yang diminta; tab Sidang mencari di nomor register/pendaftaran/
+identifikasi, pemohon, dan termohon.
+
+**Tabel.** Klik judul kolom untuk mengurutkan (klik lagi untuk membalik arah).
+Baris dimuat 200 sekaligus lewat tombol "Muat 200 baris lagi" supaya tabel ribuan
+baris tetap ringan. Di tab Sidang, klik baris kasus untuk membuka detail kasus dan
+**linimasa agenda sidang** dari `sidang_agenda.csv`, urut berdasarkan `AGENDA_KE`.
+
+**Grafik tren per tahun** sengaja tetap menampilkan seluruh tahun (hanya mengikuti
+filter lain dan pencarian) supaya bentuk trennya tetap terbaca saat satu tahun
+dipilih.
+
+## Bagaimana data mentah diperlakukan
+
+- **Nilai kosong tidak disembunyikan.** `HASIL_JALUR` dan `AMAR_PUTUSAN` yang
+  kosong ditampilkan sebagai **"Belum diklasifikasi"** — ikut dihitung di KPI,
+  muncul di grafik dengan warna abu-abu netral, dan bisa dipilih di dropdown.
+  Sebagian besar baris memang belum terklasifikasi, jadi kategori ini biasanya
+  yang terbesar; itu memang keadaan datanya.
+- **Kosakata baku dipakai apa adanya.** Jenis Pemohon: `Badan Hukum`,
+  `Perseorangan`, `Kelompok Orang`. Hasil/Jalur: `Mediasi`, `Ajudikasi`,
+  `Pencabutan`. Amar Putusan: `Putusan Mediasi` (Mediasi); `Dikabulkan
+  Seluruhnya`, `Dikabulkan Sebagian`, `Ditolak Seluruhnya`, `Putusan Gugur`,
+  `Putusan Sela` (Ajudikasi); `Pencabutan`, `Pencabutan Saat Sidang`
+  (Pencabutan). Dropdown **Amar Putusan menyesuaikan jalur** yang sedang dipilih.
+- **Varian ejaan dirapikan, yang ambigu tidak ditebak.** Di kolom
+  `JENIS_PEMOHON`, penulisan seperti "Perorangan" dan "Orang Pribadi" dipetakan ke
+  `Perseorangan`. Nilai yang tidak jelas masuk jenis mana (mis. "Kuasa") dibiarkan
+  sebagai "Belum diklasifikasi", bukan ditebak.
+- **Tanggal agenda ditulis beragam** di data mentah (`2018-05-28 00:00:00`,
+  `22/2/2021 (Mediasi kedua)`, `19 Maret 2021 (P. Putusan)`). Yang bisa dibaca
+  ditampilkan sebagai tanggal Indonesia, sisa teksnya tetap ditampilkan apa adanya
+  sebagai catatan. Yang tidak terbaca ditampilkan mentah, tidak dibuang.
 
 ## Memperbarui data
 
-1. Buka `data/sengketa_informasi.csv`.
-2. Gabungkan (merge) data tahun berjalan ke file ini secara manual — pertahankan
-   urutan kolom **NO, TAHUN, ...** dan nama header apa adanya (dashboard membaca
-   berdasarkan nama kolom, bukan posisi).
-3. Upload ulang / commit ke Space ini di Hugging Face. Tidak perlu mengubah
-   `index.html`.
+Cukup ganti isi CSV di `data/` — kode tidak perlu disentuh. Pertahankan nama
+header kolomnya (dashboard membaca berdasarkan nama kolom, bukan posisi), dan
+jaga `NO_KASUS` di `sidang_agenda.csv` tetap merujuk ke `NO` di
+`sidang_kasus.csv`.
 
 ## Menjalankan lokal
 
-Buka `index.html` lewat server statis lokal (bukan langsung double-click file,
-karena `fetch()` butuh HTTP, bukan `file://`), misalnya:
+`fetch()` butuh HTTP, jadi jangan buka `index.html` dengan klik ganda:
 
 ```bash
 python -m http.server 8000
