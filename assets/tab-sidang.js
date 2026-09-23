@@ -388,5 +388,5 @@
     });
   }
 
-  K.registerTab('sidang', { init: init, render: render });
+  K.registerTab('sidang', { init: init, render: render, needsData: true });
 })(window.KIP);

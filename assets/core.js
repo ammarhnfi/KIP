@@ -439,7 +439,15 @@ window.KIP = (function () {
   var tabs = {};
   var activeTab = null;
 
+  // Tab ditandai siap setelah init-nya jalan, supaya activate() tidak pernah
+  // memanggil render() pada tab yang datanya belum ada.
   function registerTab(name, def) {
+    var initAsli = def.init;
+    def.ready = false;
+    def.init = function () {
+      initAsli.apply(def, arguments);
+      def.ready = true;
+    };
     tabs[name] = def;
   }
 
@@ -453,16 +461,25 @@ window.KIP = (function () {
       p.hidden = (p.id !== 'tab-' + name);
     });
     // Grafik baru digambar saat panelnya terlihat, supaya lebarnya benar.
-    tabs[name].render();
+    if (tabs[name].ready) tabs[name].render();
     try { localStorage.setItem('kip-tab', name); } catch (e) { /* mode privat */ }
   }
 
   function requestRender(name) {
-    if (activeTab === name) tabs[name].render();
+    if (activeTab === name && tabs[name].ready) tabs[name].render();
   }
 
   function boot() {
     var status = document.getElementById('app-status');
+
+    // Tab yang tidak butuh CSV disiapkan lebih dulu, dan tombol tab dipasang di
+    // luar Promise, supaya tab statis tetap bisa dibuka meski data gagal dimuat.
+    var tanpaData = Object.keys(tabs).filter(function (n) { return !tabs[n].needsData; });
+    tanpaData.forEach(function (n) { tabs[n].init(); });
+    document.querySelectorAll('.tab').forEach(function (b) {
+      b.addEventListener('click', function () { activate(b.dataset.tab); });
+    });
+
     Promise.all([
       loadCsv('./data/sengketa_informasi.csv'),
       loadCsv('./data/sidang_kasus.csv'),
@@ -471,13 +488,9 @@ window.KIP = (function () {
       tabs.permohonan.init(res[0]);
       tabs.sidang.init(res[1], res[2]);
 
-      document.querySelectorAll('.tab').forEach(function (b) {
-        b.addEventListener('click', function () { activate(b.dataset.tab); });
-      });
-
       // Ukuran label bar horizontal ikut lebar kartu, jadi gambar ulang saat resize.
       window.addEventListener('resize', debounce(function () {
-        if (activeTab) tabs[activeTab].render();
+        if (activeTab && tabs[activeTab].ready) tabs[activeTab].render();
       }, 250));
 
       status.hidden = true;
@@ -490,6 +503,8 @@ window.KIP = (function () {
       status.textContent = 'Gagal memuat data: ' + err.message +
         '. Pastikan halaman dibuka lewat HTTP (bukan file://) dan folder data/ berisi ketiga CSV.';
       console.error(err);
+      // Tab yang tidak bergantung CSV tetap bisa dipakai.
+      if (tanpaData.length) activate(tanpaData[0]);
     });
   }
 

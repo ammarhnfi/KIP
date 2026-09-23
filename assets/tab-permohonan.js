@@ -213,5 +213,5 @@
     });
   }
 
-  K.registerTab('permohonan', { init: init, render: render });
+  K.registerTab('permohonan', { init: init, render: render, needsData: true });
 })(window.KIP);
