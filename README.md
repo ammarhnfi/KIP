@@ -20,6 +20,7 @@ Aplikasinya punya dua tab:
 | --- | --- |
 | **Permohonan** | Permohonan penyelesaian sengketa informasi (PSI) yang masuk |
 | **Buku Besar Sidang** | Proses persidangan tiap kasus + linimasa agenda sidangnya |
+| **Alur & Aturan** | Alur proses penyelesaian sengketa (9 fase), tenggat waktu, dan rujukan pasal |
 
 ## Struktur file
 
@@ -29,6 +30,7 @@ assets/app.css          gaya
 assets/core.js          util bersama: baca CSV, pencarian, tabel, util grafik, tab
 assets/tab-permohonan.js  tab 1
 assets/tab-sidang.js      tab 2
+assets/tab-alur.js        tab 3 (isi alur + rujukan pasal, statis)
 data/sengketa_informasi.csv   data permohonan
 data/sidang_kasus.csv         data kasus (satu baris per kasus)
 data/sidang_agenda.csv        data agenda sidang (satu baris per tanggal sidang)
@@ -39,6 +41,8 @@ baku** (daftar opsi Jenis Pemohon, Hasil/Jalur, dan Amar Putusan) plus pemetaan
 warnanya.
 
 ## Fitur tiap tab
+
+### Permohonan & Buku Besar Sidang
 
 Keduanya punya pola yang sama: kartu filter (pencarian bebas + dropdown + tombol
 **Reset filter**) → baris kartu KPI → grafik → tabel data yang bisa disortir.
@@ -58,6 +62,28 @@ baris tetap ringan. Di tab Sidang, klik baris kasus untuk membuka detail kasus d
 **Grafik tren per tahun** sengaja tetap menampilkan seluruh tahun (hanya mengikuti
 filter lain dan pencarian) supaya bentuk trennya tetap terbaca saat satu tahun
 dipilih.
+
+### Alur & Aturan
+
+Tab rujukan, bukan tab data — tidak membaca CSV sama sekali, jadi tetap bisa
+dibuka walau pemuatan data gagal. Isinya:
+
+- Ringkasan (gratis, maksimal 100 hari kerja, 3 jenis putusan), legenda warna,
+  dan glosarium istilah (Panitera, Majelis Komisioner, Mediator, Termohon).
+- Alur vertikal **9 fase (00–08)**, dari permohonan informasi ke PPID sampai
+  upaya hukum dan eksekusi. Tiap tahapan berupa kartu dengan badge tenggat waktu
+  dan badge rujukan pasal; sebagian punya bagian "detail lebih lanjut" yang bisa
+  dibuka-tutup.
+- Titik percabangan tampil sebagai dua kolom berdampingan dengan label **ATAU**
+  di tengah, dan menumpuk jadi satu kolom di layar sempit.
+- Kode warna: **biru** = tahapan proses berlanjut, **hijau** = titik akhir
+  berhasil (putusan/kesepakatan terbit), **merah** = titik berhenti (gugur,
+  ditolak, dicabut), **kuning kecokelatan** = badge tenggat waktu.
+
+Sumbernya PERKI No. 1 Tahun 2013 dan UU No. 14 Tahun 2008. Seluruh teksnya ada
+di satu struktur data di `assets/tab-alur.js`, jadi mengoreksi isi alur atau
+nomor pasal cukup mengubah array `FASE` di file itu. Tab ini catatan kerja
+internal, bukan pendapat hukum resmi.
 
 ## Bagaimana data mentah diperlakukan
 

@@ -18,6 +18,7 @@
 <nav class="tabs" role="tablist" aria-label="Bagian dashboard">
   <button class="tab" role="tab" id="tab-btn-permohonan" aria-controls="tab-permohonan" aria-selected="true" data-tab="permohonan">Permohonan</button>
   <button class="tab" role="tab" id="tab-btn-sidang" aria-controls="tab-sidang" aria-selected="false" data-tab="sidang">Buku Besar Sidang</button>
+  <button class="tab" role="tab" id="tab-btn-alur" aria-controls="tab-alur" aria-selected="false" data-tab="alur">Alur &amp; Aturan</button>
 </nav>
 
 <div id="app-status" class="app-status" role="status">Memuat data…</div>
@@ -187,11 +188,34 @@
   </div>
 </section>
 
+<!-- ======================= TAB 3: ALUR & ATURAN ======================= -->
+<section class="tab-panel" id="tab-alur" role="tabpanel" aria-labelledby="tab-btn-alur" hidden>
+
+  <div class="section-head">
+    <h2>Alur &amp; Aturan Penyelesaian Sengketa Informasi</h2>
+    <p class="section-sub">Dari permohonan informasi ke badan publik sampai putusan Komisi Informasi — lengkap dengan tenggat waktu dan rujukan pasal.</p>
+  </div>
+
+  <div class="kpi-row kpi-row-3" id="a-kpi"></div>
+
+  <div class="grid-2">
+    <div class="card" id="a-legend"></div>
+    <div class="card" id="a-glosarium"></div>
+  </div>
+
+  <nav class="flow-nav" id="a-nav" aria-label="Lompat ke fase"></nav>
+
+  <div id="a-flow"></div>
+
+  <div class="card flow-disclaimer" id="a-sumber"></div>
+</section>
+
 <p class="footer-note">Sumber: rekap internal Sekretariat Komisi Informasi Pusat, diolah untuk keperluan diseminasi data.</p>
 
 <script src="./assets/core.js"></script>
 <script src="./assets/tab-permohonan.js"></script>
 <script src="./assets/tab-sidang.js"></script>
+<script src="./assets/tab-alur.js"></script>
 <script>KIP.boot();</script>
 </body>
 </html>
