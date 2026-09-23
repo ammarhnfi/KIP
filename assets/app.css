@@ -1,0 +1,265 @@
+/* Dashboard Sengketa Informasi — Komisi Informasi Pusat
+   Palet seri grafik mengikuti slot kategorikal tervalidasi (biru/oranye/aqua);
+   abu-abu netral khusus dipakai untuk kategori "Belum diklasifikasi" (ketiadaan
+   data), selalu didampingi legenda + label langsung. */
+:root {
+  color-scheme: light;
+
+  --surface: #ffffff;
+  --bg: #F1F5F9;
+  --border: #E2E8F0;
+  --grid: #E9EDF2;
+
+  --text-primary: #1E293B;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+
+  --brand: #1E40AF;
+  --brand-tint: #DBEAFE;
+
+  --series-1: #2a78d6;  /* biru   — Mediasi */
+  --series-2: #eb6834;  /* oranye — Ajudikasi */
+  --series-3: #1baf7a;  /* aqua   — Pencabutan */
+  --series-none: #5b6472; /* netral — Belum diklasifikasi */
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 24px 24px 8px;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ---------- kepala halaman & tab ---------- */
+.page-head h1 { font-size: 24px; margin: 0 0 2px; }
+.page-sub { color: var(--text-muted); font-size: 14px; margin: 0 0 18px; }
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.tab {
+  appearance: none;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  border-radius: 6px 6px 0 0;
+}
+.tab:hover { color: var(--brand); background: var(--brand-tint); }
+.tab[aria-selected="true"] { color: var(--brand); border-bottom-color: var(--brand); }
+.tab:focus-visible { outline: 2px solid var(--series-1); outline-offset: 2px; }
+
+.app-status {
+  padding: 14px 18px;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-muted);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+.app-status[hidden] { display: none; }
+.app-status.is-error { color: #b42318; }
+
+.section-head h2 { font-size: 19px; margin: 0 0 2px; }
+.section-sub { color: var(--text-muted); font-size: 13px; margin: 0 0 16px; }
+
+/* ---------- kartu ---------- */
+.card {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  margin-bottom: 18px;
+}
+
+/* ---------- filter ---------- */
+.filter-bar {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.filter-bar label {
+  display: block;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.filter-bar select,
+.filter-bar input[type="search"] {
+  width: 230px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #CBD5E1;
+  font: inherit;
+  font-size: 13px;
+  background: var(--surface);
+  color: var(--text-primary);
+}
+.filter-bar select:disabled { background: #F8FAFC; color: var(--text-muted); }
+.filter-bar select:focus, .filter-bar input[type="search"]:focus {
+  outline: none;
+  border-color: var(--series-1);
+  box-shadow: 0 0 0 3px var(--brand-tint);
+}
+.filter-search { flex: 1 1 320px; min-width: 260px; }
+.filter-search input[type="search"] { width: 100%; }
+.filter-hint { font-size: 11px; color: var(--text-muted); margin: 4px 0 0; }
+
+.btn-reset, .btn-more {
+  padding: 9px 14px;
+  border-radius: 6px;
+  border: 1px solid #CBD5E1;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 26px;
+}
+.btn-more { margin-top: 0; }
+.btn-reset:hover, .btn-more:hover {
+  background: var(--brand-tint);
+  border-color: var(--series-1);
+  color: var(--brand);
+}
+
+/* ---------- KPI ---------- */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.kpi-row-6 { grid-template-columns: repeat(6, 1fr); }
+.kpi {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  border-top: 3px solid var(--series-1);
+}
+.kpi .value { font-size: 28px; font-weight: 700; color: var(--brand); line-height: 1.15; }
+.kpi .title { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-top: 6px; }
+.kpi .sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* ---------- grafik ---------- */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.chart-card { margin: 0 0 18px; }
+.chart-card figcaption { margin-bottom: 10px; }
+.chart-card h3 { font-size: 15px; margin: 0; }
+.chart-sub { font-size: 12px; color: var(--text-muted); margin: 2px 0 0; }
+/* tinggi plot sudah termasuk pita sumbu-x, jadi tidak ada scroll kecil di kartu */
+.plot { width: 100%; }
+
+/* ---------- tabel ---------- */
+.table-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.table-head h3 { font-size: 15px; margin: 0; }
+.table-count { font-size: 12px; color: var(--text-muted); margin: 0; }
+.table-hint { font-size: 12px; color: var(--text-muted); margin: 6px 0 0; }
+.table-wrap {
+  max-height: 460px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 12px;
+}
+.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.data-table th, .data-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.data-table th {
+  background: var(--brand);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+}
+.data-table th:hover { background: #1B3A9E; }
+.data-table th .sort-mark { opacity: 0.55; margin-left: 4px; font-size: 10px; }
+.data-table th[aria-sort="ascending"] .sort-mark,
+.data-table th[aria-sort="descending"] .sort-mark { opacity: 1; }
+.data-table tbody tr:nth-child(odd of .row-main) { background: #F8FAFC; }
+.data-table-expandable .row-main { cursor: pointer; }
+.data-table-expandable .row-main:hover { background: var(--brand-tint); }
+.data-table .col-num { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table .empty-cell { text-align: center; color: var(--text-muted); padding: 22px; }
+.table-more { margin-top: 12px; }
+
+mark { background: #FDE68A; color: inherit; padding: 0 1px; border-radius: 2px; }
+
+.pill {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.pill-mediasi { color: #1f5fa8; }
+.pill-ajudikasi { color: #b4451f; }
+.pill-pencabutan { color: #14785a; }
+.pill-none { color: var(--text-muted); }
+
+/* ---------- detail kasus ---------- */
+.row-detail > td { background: #F8FAFC; padding: 16px 18px; }
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px 22px;
+  margin-bottom: 14px;
+}
+.detail-grid dt { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+.detail-grid dd { margin: 2px 0 0; font-size: 12px; }
+.timeline { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 2px solid var(--brand-tint); }
+.timeline li { position: relative; padding: 0 0 12px 14px; }
+.timeline li:last-child { padding-bottom: 0; }
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--series-1);
+  box-shadow: 0 0 0 2px #F8FAFC;
+}
+.timeline .tl-date { font-weight: 600; font-size: 12px; }
+.timeline .tl-note { font-size: 12px; color: var(--text-muted); }
+.detail-subhead { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+
+.footer-note { color: var(--text-muted); font-size: 11px; margin: 18px 0; text-align: center; }
+
+@media (max-width: 1100px) {
+  .kpi-row-6 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  body { padding: 16px 16px 8px; }
+  .kpi-row, .kpi-row-6 { grid-template-columns: repeat(2, 1fr); }
+  .grid-2 { grid-template-columns: 1fr; }
+  .filter-bar select, .filter-bar input[type="search"] { width: 100%; }
+  .filter-bar > div { flex: 1 1 100%; }
+  .btn-reset { margin-top: 4px; }
+}
