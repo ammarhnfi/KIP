@@ -34,6 +34,7 @@ assets/tab-alur.js        tab 3 (isi alur + rujukan pasal, statis)
 data/sengketa_informasi.csv   data permohonan
 data/sidang_kasus.csv         data kasus (satu baris per kasus)
 data/sidang_agenda.csv        data agenda sidang (satu baris per tanggal sidang)
+scraper/scraping_putusan_jdih.ipynb  notebook scraper putusan JDIH KI (lihat di bawah)
 ```
 
 Tidak ada data yang di-hardcode di JavaScript. Yang ada di kode hanya **kosakata
@@ -113,6 +114,24 @@ Cukup ganti isi CSV di `data/` — kode tidak perlu disentuh. Pertahankan nama
 header kolomnya (dashboard membaca berdasarkan nama kolom, bukan posisi), dan
 jaga `NO_KASUS` di `sidang_agenda.csv` tetap merujuk ke `NO` di
 `sidang_kasus.csv`.
+
+## Scraper putusan JDIH
+
+`scraper/scraping_putusan_jdih.ipynb` mengambil data putusan dari
+<https://jdih.komisiinformasi.go.id/putusan> ke Excel/CSV. Notebook ini tidak perlu
+diubah kodenya: jalankan sel dari atas ke bawah (Google Colab atau Jupyter), lalu
+atur pilihannya lewat kotak centang/dropdown, yaitu:
+
+- saringan **tahun, jenis** (Putusan / Putusan Mediasi / Penetapan), **kata kunci**
+  di judul, dan batas jumlah;
+- **kolom** yang disimpan, dipilih setelah melihat pratinjau 3 putusan;
+- opsional **unduh PDF** dan **ekstrak teks PDF**.
+
+Notebook ini mendeteksi sendiri cara membaca situs: HTML biasa dulu, dan kalau situsnya
+dibangun dengan JavaScript, notebook membukanya pakai browser otomatis (Playwright) dan
+memakai API JSON-nya kalau ada. Hasil per putusan disimpan di cache, jadi kalau
+proses terputus cukup jalankan ulang. Hasilnya masuk ke `hasil_scraping/`, dan folder ini
+tidak ikut di-commit.
 
 ## Menjalankan lokal
 
