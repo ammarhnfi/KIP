@@ -731,10 +731,10 @@ const msg=document.getElementById('msg');
 if(window.L){
  map=L.map('map',{zoomSnap:.5,worldCopyJump:false,attributionControl:true}).fitBounds(IND);
  const land=L.polygon(LAND,{stroke:true,weight:.6,color:css('--line'),fillColor:css('--land'),fillOpacity:1,interactive:false}).addTo(map);
- const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'});
+ let fails=0;const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'});
  const sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Esri World Imagery'});
- let fails=0;[osm,sat].forEach(t=>t.on('tileerror',()=>{if(++fails===4)msg.textContent='Ubin peta tidak termuat di tampilan ini; yang tampil peta garis pantai bawaan.'}));
- [osm,sat].forEach(t=>t.once('tileload',()=>land.setStyle({opacity:0,fillOpacity:0})));
+ [osm,sat].forEach(t=>t.on('tileerror',()=>{if(++fails===4&&!loaded){msg.textContent='Peta jalan dan satelit tidak bisa dimuat di halaman ini (diblokir oleh tampilan claude.ai); yang tampil peta garis pantai bawaan. Di Hugging Face keduanya tampil normal.';document.querySelector('.seg').hidden=true}}));
+ let loaded=false;[osm,sat].forEach(t=>t.once('tileload',()=>{loaded=true;land.setStyle({opacity:0,fillOpacity:0})}));
  osm.addTo(map);let base=osm;
  document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{const n=b.dataset.l==='sat'?sat:osm;if(n!==base){map.removeLayer(base);n.addTo(map);base=n}document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed',x===b))});
  var lines=L.layerGroup().addTo(map),dots=L.layerGroup().addTo(map);
